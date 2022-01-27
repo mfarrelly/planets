@@ -9,37 +9,20 @@ export function World() {
             <ambientLight color="#030" />
             <pointLight position={[0, 10, 10]} color="red" />
             <Planet
-                position={[0, 0, 0]}
+                position={[0, -1, 0]}
                 rotationDelta={[0.01, 0.005, -0.009]}
-                // moveFunc={(props, d, t, p) => {
-                //     const nextPosition = new THREE.Vector3(
-                //         Math.sin(t) * -d,
-                //         0,
-                //         Math.cos(t) * d
-                //     );
-
-                //     return nextPosition;
-                // }}
+                dimensions={[0.7, 32, 32]}
                 orbitPeriod={5}
                 semiMajor={5}
                 eccentricity={0.0167112}
             />
             <Planet
-                position={[0, 0, 0]}
+                position={[0, -1, 0]}
                 rotationDelta={[-0.01, -0.005, 0.009]}
-                // moveFunc={(props, d, t, p) => {
-                //     const nextPosition = new THREE.Vector3(
-                //         Math.sin(t) * d,
-                //         0,
-                //         Math.cos(t) * d
-                //     );
-
-                //     return nextPosition;
-                // }}
-
+                dimensions={[0.2, 32, 32]}
                 orbitPeriod={2}
                 semiMajor={1}
-                eccentricity={0.0167112}
+                eccentricity={0.8}
             />
         </Canvas>
     );

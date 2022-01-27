@@ -1,5 +1,10 @@
 import React, { useMemo, useRef, useState } from "react";
-import { MeshProps, useFrame, Vector3 } from "@react-three/fiber";
+import {
+    MeshProps,
+    SphereGeometryProps,
+    useFrame,
+    Vector3,
+} from "@react-three/fiber";
 import * as THREE from "three";
 
 function asV3(input?: Vector3): THREE.Vector3 {
@@ -28,6 +33,7 @@ export interface PlanetProps extends MeshProps {
     orbitPeriod: number;
     semiMajor: number;
     eccentricity: number;
+    dimensions?: SphereGeometryProps["args"];
 }
 
 function defaultPlanetMove(
@@ -36,17 +42,18 @@ function defaultPlanetMove(
     totalTime: number,
     lastPosition: THREE.Vector3
 ): THREE.Vector3 {
+    // mean anomaly
     const M = 2.0 * Math.PI * (totalTime / props.orbitPeriod);
     const a = props.semiMajor;
     const e = props.eccentricity;
     const LOOP_LIMIT = 10;
-    // // 2) Seed with mean anomaly and solve Kepler's eqn for E
+    // 2) Seed with mean anomaly and solve Kepler's eqn for E
     let u = M; // seed with mean anomoly
     let u_next = 0;
     let loopCount = 0;
-    // // iterate until within 10-6
+    // iterate until within 10-6
     while (loopCount++ < LOOP_LIMIT) {
-        // // this should always converge in a small number of iterations - but be paranoid
+        // this should always converge in a small number of iterations - but be paranoid
         u_next = u + (M - (u - e * Math.sin(u))) / (1 - e * Math.cos(u));
         if (Math.abs(u_next - u) < 1e-6) {
             break;
@@ -70,10 +77,12 @@ export function Planet({
     moveDelta = [0, 0, 0],
     moveFunc = defaultPlanetMove,
     rotationDelta = [0, 0, 0],
+    dimensions = [0.7, 32, 32],
     ...props
 }: PlanetProps) {
     // This reference gives us direct access to the THREE.Mesh object
     const ref = useRef<THREE.Mesh>();
+    const refTime = useRef<number>(0);
     // Hold state for hovered and clicked events
     const [hovered, hover] = useState(false);
     const [clicked, click] = useState(false);
@@ -81,10 +90,6 @@ export function Planet({
     const [center, setCenter] = useState<THREE.Vector3>(asV3(position));
     const rotDelta = useMemo(() => asV3(rotationDelta), [rotationDelta]);
     const movDelta = useMemo(() => asV3(moveDelta), [moveDelta]);
-
-    // Subscribe this component to the render-loop, rotate the mesh every frame
-
-    const refTime = useRef<number>(0);
 
     useFrame((_state, _delta) => {
         if (!ref.current) {
@@ -113,14 +118,14 @@ export function Planet({
         <mesh
             {...props}
             ref={ref}
-            scale={clicked ? 1.5 : 1}
+            scale={clicked || hovered ? 1.5 : 1}
             onClick={(event) => click(!clicked)}
             onPointerOver={(event) => hover(true)}
             onPointerOut={(event) => hover(false)}
             position={center}
         >
-            <boxGeometry args={[1, 1, 1]} />
-            {/* <sphereGeometry args={[0.7, 32, 32]} /> */}
+            {/* <boxGeometry args={[1, 1, 1]} /> */}
+            <sphereGeometry args={dimensions} />
             <meshStandardMaterial color={hovered ? "hotpink" : "orange"} />
         </mesh>
     );
