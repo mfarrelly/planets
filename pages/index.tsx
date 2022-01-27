@@ -27,6 +27,13 @@ export default function Home() {
                     <code className={styles.code}>pages/index.js</code>
                 </p>
 
+                <Canvas>
+                    <ambientLight />
+                    <pointLight position={[10, 10, 10]} />
+                    <Box position={[-1.2, 0, 0]} />
+                    <Box position={[1.2, 0, 0]} />
+                </Canvas>
+
                 <div className={styles.grid}>
                     <a href="https://nextjs.org/docs" className={styles.card}>
                         <h2>Documentation &rarr;</h2>
