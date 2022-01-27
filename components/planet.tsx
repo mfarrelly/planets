@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { MeshProps, useFrame, Vector3 } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -15,7 +15,63 @@ function asV3(input?: Vector3): THREE.Vector3 {
     }
 }
 
-export function Planet({ position, ...props }: MeshProps) {
+export interface PlanetProps extends MeshProps {
+    rotationDelta?: Vector3;
+    moveDelta?: Vector3;
+    moveFunc?: (
+        props: PlanetProps,
+        delta: number,
+        totalTime: number,
+        lastPosition: THREE.Vector3
+    ) => THREE.Vector3;
+
+    orbitPeriod: number;
+    semiMajor: number;
+    eccentricity: number;
+}
+
+function defaultPlanetMove(
+    props: PlanetProps,
+    delta: number,
+    totalTime: number,
+    lastPosition: THREE.Vector3
+): THREE.Vector3 {
+    const M = 2.0 * Math.PI * (totalTime / props.orbitPeriod);
+    const a = props.semiMajor;
+    const e = props.eccentricity;
+    const LOOP_LIMIT = 10;
+    // // 2) Seed with mean anomaly and solve Kepler's eqn for E
+    let u = M; // seed with mean anomoly
+    let u_next = 0;
+    let loopCount = 0;
+    // // iterate until within 10-6
+    while (loopCount++ < LOOP_LIMIT) {
+        // // this should always converge in a small number of iterations - but be paranoid
+        u_next = u + (M - (u - e * Math.sin(u))) / (1 - e * Math.cos(u));
+        if (Math.abs(u_next - u) < 1e-6) {
+            break;
+        }
+        u = u_next;
+    }
+    const cos_f = (Math.cos(u) - e) / (1 - e * Math.cos(u));
+    const sin_f = (Math.sqrt(1 - e * e) * Math.sin(u)) / (1 - e * Math.cos(u));
+    const r = (a * (1 - e * e)) / (1 + e * cos_f);
+
+    const originalPosition = new THREE.Vector3();
+
+    originalPosition.x = r * cos_f;
+    originalPosition.z = r * sin_f;
+
+    return originalPosition;
+}
+
+export function Planet({
+    position,
+    moveDelta = [0, 0, 0],
+    moveFunc = defaultPlanetMove,
+    rotationDelta = [0, 0, 0],
+    ...props
+}: PlanetProps) {
     // This reference gives us direct access to the THREE.Mesh object
     const ref = useRef<THREE.Mesh>();
     // Hold state for hovered and clicked events
@@ -23,6 +79,8 @@ export function Planet({ position, ...props }: MeshProps) {
     const [clicked, click] = useState(false);
 
     const [center, setCenter] = useState<THREE.Vector3>(asV3(position));
+    const rotDelta = useMemo(() => asV3(rotationDelta), [rotationDelta]);
+    const movDelta = useMemo(() => asV3(moveDelta), [moveDelta]);
 
     // Subscribe this component to the render-loop, rotate the mesh every frame
 
@@ -32,13 +90,20 @@ export function Planet({ position, ...props }: MeshProps) {
         if (!ref.current) {
             return;
         }
-        ref.current.rotation.x += 0.01;
-        const nextPosition = new THREE.Vector3(
-            Math.sin(refTime.current) * _delta,
-            Math.sin(refTime.current) * -1 * _delta,
-            Math.cos(refTime.current) * _delta
-        );
-        ref.current.position.copy(center.add(nextPosition));
+        ref.current.rotation.x += rotDelta.x;
+        ref.current.rotation.y += rotDelta.y;
+        ref.current.rotation.z += rotDelta.z;
+
+        const nextPosition = moveFunc
+            ? moveFunc(props, _delta, refTime.current, ref.current.position)
+            : new THREE.Vector3(
+                  Math.sin(refTime.current) * _delta,
+                  0,
+                  Math.cos(refTime.current) * _delta
+              );
+
+        nextPosition.add(center);
+        ref.current.position.copy(nextPosition);
 
         refTime.current += _delta;
     });
@@ -54,7 +119,8 @@ export function Planet({ position, ...props }: MeshProps) {
             onPointerOut={(event) => hover(false)}
             position={center}
         >
-            <sphereGeometry args={[0.7, 32, 32]} />
+            <boxGeometry args={[1, 1, 1]} />
+            {/* <sphereGeometry args={[0.7, 32, 32]} /> */}
             <meshStandardMaterial color={hovered ? "hotpink" : "orange"} />
         </mesh>
     );
