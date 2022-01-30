@@ -73,6 +73,7 @@ function defaultPlanetMove(
 }
 
 export function Planet({
+    children,
     position,
     moveDelta = [0, 0, 0],
     moveFunc = defaultPlanetMove,
@@ -118,7 +119,7 @@ export function Planet({
         <mesh
             {...props}
             ref={ref}
-            scale={clicked || hovered ? 1.5 : 1}
+            scale={clicked || hovered ? 5 : 1}
             onClick={(event) => click(!clicked)}
             onPointerOver={(event) => hover(true)}
             onPointerOut={(event) => hover(false)}
@@ -126,7 +127,8 @@ export function Planet({
         >
             {/* <boxGeometry args={[1, 1, 1]} /> */}
             <sphereGeometry args={dimensions} />
-            <meshStandardMaterial color={hovered ? "hotpink" : "orange"} />
+            {children}
+            {/* <meshStandardMaterial color={hovered ? "hotpink" : "orange"} /> */}
         </mesh>
     );
 }
