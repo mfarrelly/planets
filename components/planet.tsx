@@ -1,10 +1,5 @@
 import React, { useMemo, useRef, useState } from "react";
-import {
-    MeshProps,
-    SphereGeometryProps,
-    useFrame,
-    Vector3,
-} from "@react-three/fiber";
+import { MeshProps, SphereGeometryProps, useFrame, Vector3 } from "@react-three/fiber";
 import * as THREE from "three";
 
 function asV3(input?: Vector3): THREE.Vector3 {
@@ -23,12 +18,7 @@ function asV3(input?: Vector3): THREE.Vector3 {
 export interface PlanetProps extends MeshProps {
     rotationDelta?: Vector3;
     moveDelta?: Vector3;
-    moveFunc?: (
-        props: PlanetProps,
-        delta: number,
-        totalTime: number,
-        lastPosition: THREE.Vector3
-    ) => THREE.Vector3;
+    moveFunc?: (props: PlanetProps, delta: number, totalTime: number, lastPosition: THREE.Vector3) => THREE.Vector3;
 
     orbitPeriod: number;
     semiMajor: number;
@@ -102,11 +92,7 @@ export function Planet({
 
         const nextPosition = moveFunc
             ? moveFunc(props, _delta, refTime.current, ref.current.position)
-            : new THREE.Vector3(
-                  Math.sin(refTime.current) * _delta,
-                  0,
-                  Math.cos(refTime.current) * _delta
-              );
+            : new THREE.Vector3(Math.sin(refTime.current) * _delta, 0, Math.cos(refTime.current) * _delta);
 
         nextPosition.add(center);
         ref.current.position.copy(nextPosition);

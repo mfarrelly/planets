@@ -30,7 +30,7 @@ function adjustProps({
         position: position,
         semiMajor: semiMajor * 50,
         orbitPeriod: orbitPeriod * 5,
-        ...input,
+        ...input
     };
 }
 
@@ -50,7 +50,7 @@ export function Scene() {
                     dimensions: [4884, 32, 32],
                     orbitPeriod: 1,
                     semiMajor: 0.387098,
-                    eccentricity: 0.20563,
+                    eccentricity: 0.20563
                 })}
             >
                 <meshStandardMaterial map={mercuryMaterial} />
@@ -62,7 +62,7 @@ export function Scene() {
                     dimensions: [12116, 32, 32],
                     orbitPeriod: 0.615,
                     semiMajor: 0.723332,
-                    eccentricity: 0.00677323,
+                    eccentricity: 0.00677323
                 })}
             >
                 <meshStandardMaterial map={venusMaterial} />
@@ -74,7 +74,7 @@ export function Scene() {
                     dimensions: [12756, 32, 32],
                     orbitPeriod: 1,
                     semiMajor: 1,
-                    eccentricity: 0.0167112,
+                    eccentricity: 0.0167112
                 })}
             >
                 <meshStandardMaterial map={earthMaterial} />
