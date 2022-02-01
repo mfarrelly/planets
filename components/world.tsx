@@ -35,14 +35,27 @@ function adjustProps({
 }
 
 export function Scene() {
+    const sunMaterial = useLoader(TextureLoader, "textures/sun.jpg");
     const earthMaterial = useLoader(TextureLoader, "textures/earth.jpg");
     const venusMaterial = useLoader(TextureLoader, "textures/venus.jpg");
     const mercuryMaterial = useLoader(TextureLoader, "textures/mercury.jpg");
     return (
         <>
-            <ambientLight color="#030" />
-            <pointLight position={[0, 10, 10]} color="white" />
-
+            <ambientLight color="#555" />
+            <pointLight position={[0, -10, -50]} color="white" />
+            <Planet
+                {...adjustProps({
+                    position: [0, -10, -50],
+                    rotationDelta: [0.0, 0.0, 0],
+                    dimensions: [139040, 32, 32],
+                    orbitPeriod: 0,
+                    semiMajor: 0,
+                    eccentricity: 0
+                })}
+                ignoreHover
+            >
+                <meshStandardMaterial map={sunMaterial} />
+            </Planet>
             <Planet
                 {...adjustProps({
                     position: [0, -10, -50],

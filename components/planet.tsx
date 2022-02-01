@@ -2,6 +2,9 @@ import React, { useMemo, useRef, useState } from "react";
 import { MeshProps, SphereGeometryProps, useFrame, Vector3 } from "@react-three/fiber";
 import * as THREE from "three";
 
+/**
+ * Converts a react-three/fiber Vector3 into a THREE.Vector3.
+ */
 function asV3(input?: Vector3): THREE.Vector3 {
     if (!input) {
         return new THREE.Vector3(0, 0, 0);
@@ -24,6 +27,7 @@ export interface PlanetProps extends MeshProps {
     semiMajor: number;
     eccentricity: number;
     dimensions?: SphereGeometryProps["args"];
+    ignoreHover?: boolean;
 }
 
 function defaultPlanetMove(
@@ -32,6 +36,9 @@ function defaultPlanetMove(
     totalTime: number,
     lastPosition: THREE.Vector3
 ): THREE.Vector3 {
+    if (props.orbitPeriod === 0) {
+        return new THREE.Vector3(0, 0, 0);
+    }
     // mean anomaly
     const M = 2.0 * Math.PI * (totalTime / props.orbitPeriod);
     const a = props.semiMajor;
@@ -64,6 +71,7 @@ function defaultPlanetMove(
 
 export function Planet({
     children,
+    ignoreHover = false,
     position,
     moveDelta = [0, 0, 0],
     moveFunc = defaultPlanetMove,
@@ -97,6 +105,8 @@ export function Planet({
         nextPosition.add(center);
         ref.current.position.copy(nextPosition);
 
+        // setCenter(nextPosition);
+
         refTime.current += _delta;
     });
 
@@ -106,15 +116,14 @@ export function Planet({
             {...props}
             ref={ref}
             scale={clicked || hovered ? 5 : 1}
-            onClick={(event) => click(!clicked)}
-            onPointerOver={(event) => hover(true)}
-            onPointerOut={(event) => hover(false)}
+            onClick={event => (!ignoreHover ? click(!clicked) : undefined)}
+            onPointerOver={event => (!ignoreHover ? hover(true) : undefined)}
+            onPointerOut={event => (!ignoreHover ? hover(false) : undefined)}
             position={center}
         >
-            {/* <boxGeometry args={[1, 1, 1]} /> */}
             <sphereGeometry args={dimensions} />
+            {/* When passed children, will be added to meshs children */}
             {children}
-            {/* <meshStandardMaterial color={hovered ? "hotpink" : "orange"} /> */}
         </mesh>
     );
 }
