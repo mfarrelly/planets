@@ -1,5 +1,10 @@
-import React, { useMemo, useRef, useState } from "react";
-import { MeshProps, SphereGeometryProps, useFrame, Vector3 } from "@react-three/fiber";
+import React, { createRef, useMemo, useRef, useState } from "react";
+import {
+    MeshProps,
+    SphereGeometryProps,
+    useFrame,
+    Vector3,
+} from "@react-three/fiber";
 import * as THREE from "three";
 
 /**
@@ -13,15 +18,21 @@ function asV3(input?: Vector3): THREE.Vector3 {
         return input;
     } else if (Array.isArray(input) && input.length === 3) {
         return new THREE.Vector3(input[0], input[1], input[2]);
-    } else {
+    } else if (typeof input == "number") {
         return new THREE.Vector3(input, input, input);
     }
+    return new THREE.Vector3(0, 0, 0);
 }
 
 export interface PlanetProps extends MeshProps {
     rotationDelta?: Vector3;
     moveDelta?: Vector3;
-    moveFunc?: (props: PlanetProps, delta: number, totalTime: number, lastPosition: THREE.Vector3) => THREE.Vector3;
+    moveFunc?: (
+        props: PlanetProps,
+        delta: number,
+        totalTime: number,
+        lastPosition: THREE.Vector3
+    ) => THREE.Vector3;
 
     orbitPeriod: number;
     semiMajor: number;
@@ -80,7 +91,7 @@ export function Planet({
     ...props
 }: PlanetProps) {
     // This reference gives us direct access to the THREE.Mesh object
-    const ref = useRef<THREE.Mesh>();
+    const ref = createRef<THREE.Mesh>();
     const refTime = useRef<number>(0);
     // Hold state for hovered and clicked events
     const [hovered, hover] = useState(false);
@@ -100,7 +111,11 @@ export function Planet({
 
         const nextPosition = moveFunc
             ? moveFunc(props, _delta, refTime.current, ref.current.position)
-            : new THREE.Vector3(Math.sin(refTime.current) * _delta, 0, Math.cos(refTime.current) * _delta);
+            : new THREE.Vector3(
+                  Math.sin(refTime.current) * _delta,
+                  0,
+                  Math.cos(refTime.current) * _delta
+              );
 
         nextPosition.add(center);
         ref.current.position.copy(nextPosition);
@@ -116,9 +131,9 @@ export function Planet({
             {...props}
             ref={ref}
             scale={clicked || hovered ? 5 : 1}
-            onClick={event => (!ignoreHover ? click(!clicked) : undefined)}
-            onPointerOver={event => (!ignoreHover ? hover(true) : undefined)}
-            onPointerOut={event => (!ignoreHover ? hover(false) : undefined)} // 1 <= 2
+            onClick={(event) => (!ignoreHover ? click(!clicked) : undefined)}
+            onPointerOver={(event) => (!ignoreHover ? hover(true) : undefined)}
+            onPointerOut={(event) => (!ignoreHover ? hover(false) : undefined)} // 1 <= 2
             position={center}
         >
             <sphereGeometry args={dimensions} />
