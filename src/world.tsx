@@ -1,5 +1,5 @@
-import { Suspense } from "react";
-import { Canvas, useLoader } from "@react-three/fiber";
+import { Suspense, createRef, useRef } from "react";
+import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import React from "react";
 import { Planet, PlanetProps } from "./planet";
 import * as THREE from "three";
@@ -39,14 +39,38 @@ function adjustProps({
     };
 }
 
-export function Scene() {
+export function Scene(props: { focusItem: string | null }) {
+    const planetRefSun = createRef<THREE.Mesh>();
+    const planetRefMercury = createRef<THREE.Mesh>();
+    const planetRefVenus = createRef<THREE.Mesh>();
+    const planetRefEarth = createRef<THREE.Mesh>();
+
     const sunMaterial = useLoader(TextureLoader, sunImage);
     const earthMaterial = useLoader(TextureLoader, earthImage);
     const venusMaterial = useLoader(TextureLoader, venusImage);
     const mercuryMaterial = useLoader(TextureLoader, mercuryImage);
+
+    useFrame((state) => {
+        //
+        if (props.focusItem) {
+            if (props.focusItem === "sun" && planetRefSun.current) {
+                state.camera.lookAt(planetRefSun.current.position);
+            }
+            if (props.focusItem === "mercury" && planetRefMercury.current) {
+                state.camera.lookAt(planetRefMercury.current.position);
+            }
+            if (props.focusItem === "venus" && planetRefVenus.current) {
+                state.camera.lookAt(planetRefVenus.current.position);
+            }
+            if (props.focusItem === "earth" && planetRefEarth.current) {
+                state.camera.lookAt(planetRefEarth.current.position);
+            }
+        }
+    });
+
     return (
         <>
-            <ambientLight color="#222" />
+            <ambientLight color="#666" />
             <pointLight position={[0, -10, -50]} color="white" />
             <color attach="background" args={["#000"]} />
             <Planet
@@ -59,6 +83,7 @@ export function Scene() {
                     eccentricity: 0,
                 })}
                 ignoreHover
+                ref={planetRefSun}
             >
                 <meshStandardMaterial map={sunMaterial} />
             </Planet>
@@ -71,6 +96,7 @@ export function Scene() {
                     semiMajor: 0.387098,
                     eccentricity: 0.20563,
                 })}
+                ref={planetRefMercury}
             >
                 <meshStandardMaterial map={mercuryMaterial} />
             </Planet>
@@ -83,6 +109,7 @@ export function Scene() {
                     semiMajor: 0.723332,
                     eccentricity: 0.00677323,
                 })}
+                ref={planetRefVenus}
             >
                 <meshStandardMaterial map={venusMaterial} />
             </Planet>
@@ -95,6 +122,7 @@ export function Scene() {
                     semiMajor: 1,
                     eccentricity: 0.0167112,
                 })}
+                ref={planetRefEarth}
             >
                 <meshStandardMaterial map={earthMaterial} />
             </Planet>
@@ -102,11 +130,11 @@ export function Scene() {
     );
 }
 
-export function World() {
+export function World(props: { focusItem: string | null }) {
     return (
         <Canvas>
             <Suspense fallback={null}>
-                <Scene />
+                <Scene focusItem={props.focusItem} />
             </Suspense>
         </Canvas>
     );

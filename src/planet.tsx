@@ -1,4 +1,4 @@
-import React, { createRef, useMemo, useRef, useState } from "react";
+import React, { createRef, useEffect, useMemo, useRef, useState } from "react";
 import {
     MeshProps,
     SphereGeometryProps,
@@ -6,6 +6,7 @@ import {
     Vector3,
 } from "@react-three/fiber";
 import * as THREE from "three";
+import { useForwardRef } from "./utils";
 
 /**
  * Converts a react-three/fiber Vector3 into a THREE.Vector3.
@@ -80,18 +81,22 @@ function defaultPlanetMove(
     return originalPosition;
 }
 
-export function Planet({
-    children,
-    ignoreHover = false,
-    position,
-    moveDelta = [0, 0, 0],
-    moveFunc = defaultPlanetMove,
-    rotationDelta = [0, 0, 0],
-    dimensions = [0.7, 32, 32],
-    ...props
-}: PlanetProps) {
+export const Planet = React.forwardRef(function Planet(
+    {
+        children,
+        ignoreHover = false,
+        position,
+        moveDelta = [0, 0, 0],
+        moveFunc = defaultPlanetMove,
+        rotationDelta = [0, 0, 0],
+        dimensions = [0.7, 32, 32],
+        ...props
+    }: PlanetProps,
+    forwardRef?: React.Ref<THREE.Mesh>
+) {
     // This reference gives us direct access to the THREE.Mesh object
-    const ref = createRef<THREE.Mesh>();
+    const ref = useForwardRef(forwardRef);
+
     const refTime = useRef<number>(0);
     // Hold state for hovered and clicked events
     const [hovered, hover] = useState(false);
@@ -141,4 +146,4 @@ export function Planet({
             {children}
         </mesh>
     );
-}
+});
