@@ -101,20 +101,20 @@ export function Planet({
     const rotDelta = useMemo(() => asV3(rotationDelta), [rotationDelta]);
     const movDelta = useMemo(() => asV3(moveDelta), [moveDelta]);
 
-    useFrame((_state, _delta) => {
+    useFrame((_state, delta) => {
         if (!ref.current) {
             return;
         }
-        ref.current.rotation.x += rotDelta.x;
-        ref.current.rotation.y += rotDelta.y;
-        ref.current.rotation.z += rotDelta.z;
+        ref.current.rotation.x += rotDelta.x * delta;
+        ref.current.rotation.y += rotDelta.y * delta;
+        ref.current.rotation.z += rotDelta.z * delta;
 
         const nextPosition = moveFunc
-            ? moveFunc(props, _delta, refTime.current, ref.current.position)
+            ? moveFunc(props, delta, refTime.current, ref.current.position)
             : new THREE.Vector3(
-                  Math.sin(refTime.current) * _delta,
+                  Math.sin(refTime.current) * delta,
                   0,
-                  Math.cos(refTime.current) * _delta
+                  Math.cos(refTime.current) * delta
               );
 
         nextPosition.add(center);
@@ -122,10 +122,10 @@ export function Planet({
 
         // setCenter(nextPosition);
 
-        refTime.current += _delta;
+        refTime.current += delta;
     });
 
-    // Return the view, these are regular Threejs elements expressed in JSX
+    // Return the view, these are regular ThreeJS elements expressed in JSX
     return (
         <mesh
             {...props}
